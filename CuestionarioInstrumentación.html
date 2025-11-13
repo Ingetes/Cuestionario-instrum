@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cuestionario de instrumentación – INGETES</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- jsPDF desde CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --green: #059669;
+      --green-dark: #047857;
+      --slate-50: #f8fafc;
+      --slate-100: #e2e8f0;
+      --slate-200: #e5e7eb;
+      --slate-600: #4b5563;
+      --slate-700: #334155;
+      --slate-900: #0f172a;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #ecfdf5, #f8fafc 50%, #e5f3ff);
+      color: var(--slate-900);
+    }
+    .page {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+    .container {
+      width: 100%;
+      max-width: 1100px;
+    }
+    .card {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      padding: 24px 24px 28px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .title-main {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--green-dark);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .title-sub {
+      font-size: 0.9rem;
+      color: var(--slate-600);
+      margin-top: 4px;
+      max-width: 520px;
+    }
+    .badge {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #ecfdf5;
+      color: var(--green-dark);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .panel {
+      border-radius: 20px;
+      border: 1px solid var(--slate-100);
+      background: #f9fafb;
+      padding: 16px 16px 18px;
+    }
+    .panel-header {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 10px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip {
+      border-radius: 999px;
+      border: 1px solid rgba(15, 118, 110, 0.2);
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: #ecfdf5;
+      color: var(--green-dark);
+      font-weight: 600;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    }
+    .chip:hover {
+      background: #d1fae5;
+      transform: translateY(-1px);
+    }
+    .chip.active {
+      background: var(--green);
+      color: white;
+    }
+
+    .note {
+      font-size: 0.7rem;
+      color: var(--slate-600);
+      margin-top: 6px;
+    }
+
+    .panel-right {
+      border-radius: 20px;
+      border: 1px solid var(--slate-100);
+      background: white;
+      padding: 18px 18px 20px;
+    }
+    .panel-right h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0 0 12px;
+      color: var(--slate-900);
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+    .field label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--slate-600);
+      margin-bottom: 4px;
+    }
+    .input, .select, .textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--slate-200);
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .input:focus, .select:focus, .textarea:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.4);
+    }
+    .textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+    .radio-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      font-size: 0.8rem;
+      color: var(--slate-700);
+    }
+    .radio-group label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .group-box {
+      border-radius: 16px;
+      border: 1px solid var(--slate-100);
+      background: #f8fafc;
+      padding: 10px 12px 12px;
+      margin-bottom: 12px;
+    }
+    .group-box-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 8px;
+    }
+    .group-row {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .group-row-label {
+      font-size: 0.75rem;
+      color: var(--slate-600);
+    }
+
+    .actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .btn-primary {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+      box-shadow: 0 10px 20px rgba(5, 150, 105, 0.35);
+    }
+    .btn-primary:hover {
+      background: var(--green-dark);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: white;
+      color: var(--slate-700);
+      border-color: var(--slate-200);
+    }
+    .btn-secondary:hover {
+      background: #f9fafb;
+    }
+    .required {
+      color: #dc2626;
+      margin-left: 2px;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <div>
+          <div class="title-main">Cuestionario de instrumentación</div>
+          <p class="title-sub">
+            Selecciona el tipo de sensor, diligencia las preguntas clave y descarga un PDF
+            resumen para compartir con el cliente o con el equipo de ingeniería.
+          </p>
+        </div>
+        <div>
+          <span class="badge">Portal clientes · INGETES</span>
+        </div>
+      </div>
+
+      <div class="layout">
+        <!-- LADO IZQUIERDO – elección del tipo de sensor -->
+        <div class="panel">
+          <div class="panel-header">1. Selecciona el tipo de sensor</div>
+          <div class="chips">
+            <button class="chip" data-type="flujo">Flujo</button>
+            <button class="chip" data-type="nivel">Nivel</button>
+            <button class="chip" data-type="temperatura">Temperatura</button>
+            <button class="chip" data-type="presion">Presión</button>
+            <button class="chip" data-type="peso">Peso</button>
+          </div>
+          <p class="note">
+            Todos los campos visibles son obligatorios. El PDF solo se puede descargar cuando
+            el cuestionario esté completamente diligenciado.
+          </p>
+          <div class="actions">
+            <button id="btnDownload" class="btn btn-primary" disabled>Descargar PDF</button>
+            <button id="btnClear" class="btn btn-secondary">Limpiar respuestas</button>
+          </div>
+        </div>
+
+        <!-- LADO DERECHO – formulario dinámico -->
+        <div class="panel-right">
+          <h2 id="formTitle">2. Completa el cuestionario</h2>
+          <div id="formFields">
+            <p style="font-size:0.85rem;color:#6b7280;">
+              Selecciona primero el tipo de sensor en la columna izquierda para ver las
+              preguntas del cuestionario.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ==========================
+  // Configuración del cuestionario
+  // ==========================
+  const QUIZ = {
+    flujo: {
+      title: 'Sensor de flujo',
+      fields: [
+        {
+          key: 'material',
+          label: 'Material que pasa por la tubería',
+          type: 'select',
+          options: ['Gas', 'Líquido', 'Vapor']
+        },
+        {
+          key: 'liquido',
+          label: 'Si es líquido, especifique cuál es',
+          type: 'text',
+          dependsOn: { field: 'material', value: 'Líquido' }
+        },
+        {
+          key: 'temp',
+          label: 'Rango de temperatura del medio',
+          type: 'text',
+          placeholder: '°C'
+        },
+        {
+          key: 'dn',
+          label: 'Diámetro nominal (DN) de la tubería',
+          type: 'text'
+        },
+        {
+          key: 'conexion',
+          label: 'Conexión a proceso',
+          type: 'select',
+          options: ['Bridada', 'Sanitaria (Triclamp)', 'Otra']
+        },
+        {
+          key: 'conexionOtra',
+          label: 'Si selecciona "Otra", especifique cuál',
+          type: 'text',
+          dependsOn: { field: 'conexion', value: 'Otra' }
+        },
+        // Grupo de propiedades
+        {
+          key: '_grupo_propiedades',
+          type: 'group',
+          label: 'Propiedades del producto',
+          children: [
+            { key: 'densidad',      label: 'Densidad' },
+            { key: 'viscosidad',    label: 'Viscosidad' },
+            { key: 'conductividad', label: 'Conductividad' },
+            { key: 'corrosion',     label: 'Resistencia a la corrosión' },
+            { key: 'abrasion',      label: 'Resistencia a la abrasión' },
+          ]
+        },
+        {
+          key: 'alimentacion',
+          label: 'Alimentación del transmisor',
+          type: 'radio',
+          options: ['110 VAC', '24 VDC']
+        },
+        {
+          key: 'comunicacion',
+          label: 'Comunicación',
+          type: 'select',
+          options: ['HART', 'Profibus DP', 'Profibus PA', 'Foundation Fieldbus', 'Modbus']
+        }
+      ]
+    },
+    nivel: {
+      title: 'Sensor de nivel',
+      fields: [
+        {
+          key: 'modo',
+          label: 'Tipo de medición',
+          type: 'radio',
+          options: ['Continua', 'Detección']
+        },
+        {
+          key: 'material',
+          label: 'Material a medir',
+          type: 'select',
+          options: ['Líquido', 'Sólidos a granel', 'Interfaz']
+        },
+        {
+          key: 'liquido',
+          label: 'Si es líquido, ¿cuál?',
+          type: 'text',
+          dependsOn: { field: 'material', value: 'Líquido' }
+        },
+        { key: 'altura',   label: 'Altura del tanque',          type: 'text' },
+        { key: 'diametro', label: 'Diámetro del tanque',        type: 'text' },
+        {
+          key: 'conexion',
+          label: 'Conexión a proceso',
+          type: 'select',
+          options: ['Bridada', 'Roscada', 'Sanitaria (Triclamp)']
+        },
+        {
+          key: 'comunicacion',
+          label: 'Comunicación',
+          type: 'select',
+          options: ['HART (4–20 mA)', 'Profibus DP', 'Modbus']
+        },
+        {
+          key: 'alimentacion',
+          label: 'Alimentación',
+          type: 'select',
+          options: ['110 VAC', '24 VDC', 'Fuente interna']
+        },
+        { key: 'temp', label: 'Temperatura del material', type: 'text' },
+      ]
+    },
+    temperatura: {
+      title: 'Sensor de temperatura',
+      fields: [
+        {
+          key: 'elemento',
+          label: 'Elemento / Transmisor',
+          type: 'select',
+          options: ['RTD (PT100/PT1000)', 'Termocupla (J/K/S)']
+        },
+        {
+          key: 'rango',
+          label: 'Rango de temperatura de proceso',
+          type: 'text'
+        },
+        {
+          key: 'comunicacion',
+          label: 'Comunicación',
+          type: 'select',
+          options: ['4–20 mA', 'HART', '0–10 V']
+        },
+        {
+          key: 'atex',
+          label: '¿Requiere protección contra explosión?',
+          type: 'radio',
+          options: ['Sí', 'No']
+        }
+      ]
+    },
+    presion: {
+      title: 'Sensor de presión',
+      fields: [
+        {
+          key: 'tipo',
+          label: 'Tipo de presión (absoluta / manométrica / diferencial)',
+          type: 'text'
+        },
+        {
+          key: 'comunicacion',
+          label: 'Comunicación',
+          type: 'select',
+          options: ['4–20 mA', '0–10 V', 'HART', 'Modbus']
+        },
+        { key: 'rango',     label: 'Rango de presión',            type: 'text' },
+        { key: 'conexion',  label: 'Conexión a proceso',          type: 'text' },
+        { key: 'precision', label: 'Precisión requerida',         type: 'text' },
+        { key: 'elec',      label: '¿Conexión eléctrica especial?', type: 'text' },
+        {
+          key: 'atex',
+          label: '¿Protección contra explosión?',
+          type: 'radio',
+          options: ['Sí', 'No']
+        }
+      ]
+    },
+    peso: {
+      title: 'Sensor de peso (celdas de carga)',
+      fields: [
+        { key: 'forma',    label: 'Forma del tanque',         type: 'text' },
+        { key: 'capVacio', label: 'Peso del tanque vacío',    type: 'text' },
+        { key: 'capLleno', label: 'Peso del tanque lleno',    type: 'text' },
+        { key: 'apoyos',   label: 'Número de puntos de apoyo',type: 'text' },
+        { key: 'gradoIP',  label: 'Grado IP requerido',       type: 'text' },
+      ]
+    }
+  };
+
+  let currentType = null;
+  const answers = {};
+
+  const chips = document.querySelectorAll('.chip');
+  const formTitle = document.getElementById('formTitle');
+  const formFields = document.getElementById('formFields');
+  const btnDownload = document.getElementById('btnDownload');
+  const btnClear = document.getElementById('btnClear');
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const type = chip.getAttribute('data-type');
+      selectType(type);
+    });
+  });
+
+  btnClear.addEventListener('click', () => {
+    if (!currentType) return;
+    answers[currentType] = {};
+    renderForm(currentType);
+  });
+
+  btnDownload.addEventListener('click', async () => {
+    if (!currentType) return;
+    const valid = validateBeforeDownload();
+    if (!valid) return;
+    await downloadPdf();
+  });
+
+  function selectType(type) {
+    currentType = type;
+    if (!answers[type]) answers[type] = {};
+    chips.forEach(c => c.classList.toggle('active', c.getAttribute('data-type') === type));
+    formTitle.textContent = `2. Completa el cuestionario – ${QUIZ[type].title}`;
+    btnDownload.disabled = false;
+    renderForm(type);
+  }
+
+  function renderForm(type) {
+    const cfg = QUIZ[type];
+    const data = answers[type] || {};
+    formFields.innerHTML = '';
+
+    cfg.fields.forEach(field => {
+      if (field.type === 'group') {
+        const groupBox = document.createElement('div');
+        groupBox.className = 'group-box';
+
+        const h = document.createElement('div');
+        h.className = 'group-box-title';
+        h.textContent = field.label;
+        groupBox.appendChild(h);
+
+        const inner = document.createElement('div');
+        inner.className = 'group-inner';
+
+        field.children.forEach(ch => {
+          const row = document.createElement('div');
+          row.className = 'group-row';
+          row.dataset.key = ch.key;
+
+          const label = document.createElement('span');
+          label.className = 'group-row-label';
+          label.textContent = ch.label + ':';
+          row.appendChild(label);
+
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'input';
+          input.value = data[ch.key] || '';
+          input.addEventListener('input', () => {
+            setAnswer(ch.key, input.value);
+          });
+          row.appendChild(input);
+
+          inner.appendChild(row);
+        });
+
+        groupBox.appendChild(inner);
+        formFields.appendChild(groupBox);
+        return;
+      }
+
+      // Campos normales
+      const wrapper = document.createElement('div');
+      wrapper.className = 'field';
+      wrapper.dataset.key = field.key;
+
+      const label = document.createElement('label');
+      label.textContent = field.label;
+      const spanReq = document.createElement('span');
+      spanReq.className = 'required';
+      spanReq.textContent = ' *';
+      label.appendChild(spanReq);
+      wrapper.appendChild(label);
+
+      if (field.type === 'text') {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'input';
+        if (field.placeholder) input.placeholder = field.placeholder;
+        input.value = data[field.key] || '';
+        input.addEventListener('input', () => {
+          setAnswer(field.key, input.value);
+          applyVisibility();
+        });
+        wrapper.appendChild(input);
+      } else if (field.type === 'textarea') {
+        const ta = document.createElement('textarea');
+        ta.className = 'textarea';
+        ta.value = data[field.key] || '';
+        ta.addEventListener('input', () => {
+          setAnswer(field.key, ta.value);
+          applyVisibility();
+        });
+        wrapper.appendChild(ta);
+      } else if (field.type === 'select') {
+        const sel = document.createElement('select');
+        sel.className = 'select';
+        const opt0 = document.createElement('option');
+        opt0.value = '';
+        opt0.textContent = '— Selecciona —';
+        sel.appendChild(opt0);
+        field.options.forEach(op => {
+          const opt = document.createElement('option');
+          opt.value = op;
+          opt.textContent = op;
+          sel.appendChild(opt);
+        });
+        sel.value = data[field.key] || '';
+        sel.addEventListener('change', () => {
+          setAnswer(field.key, sel.value);
+          applyVisibility();
+        });
+        wrapper.appendChild(sel);
+      } else if (field.type === 'radio') {
+        const rg = document.createElement('div');
+        rg.className = 'radio-group';
+
+        field.options.forEach(op => {
+          const lbl = document.createElement('label');
+          const inp = document.createElement('input');
+          inp.type = 'radio';
+          inp.name = `radio-${type}-${field.key}`;
+          inp.value = op;
+          inp.checked = data[field.key] === op;
+          inp.addEventListener('change', () => {
+            if (inp.checked) {
+              setAnswer(field.key, op);
+              applyVisibility();
+            }
+          });
+          const span = document.createElement('span');
+          span.textContent = op;
+          lbl.appendChild(inp);
+          lbl.appendChild(span);
+          rg.appendChild(lbl);
+        });
+
+        wrapper.appendChild(rg);
+      }
+
+      formFields.appendChild(wrapper);
+    });
+
+    applyVisibility();
+  }
+
+  function setAnswer(key, value) {
+    if (!currentType) return;
+    if (!answers[currentType]) answers[currentType] = {};
+    answers[currentType][key] = value;
+  }
+
+  function applyVisibility() {
+    if (!currentType) return;
+    const cfg = QUIZ[currentType];
+    const data = answers[currentType] || {};
+
+    cfg.fields.forEach(field => {
+      if (field.type === 'group') {
+        // grupo siempre visible
+        return;
+      }
+      const el = formFields.querySelector(`[data-key="${field.key}"]`);
+      if (!el) return;
+
+      if (field.dependsOn) {
+        const v = (data[field.dependsOn.field] || '').toString();
+        const visible = v === field.dependsOn.value;
+        el.style.display = visible ? '' : 'none';
+        if (!visible) {
+          // limpiar valor si se esconde
+          setAnswer(field.key, '');
+          const input = el.querySelector('input, textarea, select');
+          if (input) input.value = '';
+        }
+      } else {
+        el.style.display = '';
+      }
+    });
+  }
+
+  function getVisibleFieldDefs() {
+    if (!currentType) return [];
+    const cfg = QUIZ[currentType];
+    const data = answers[currentType] || {};
+    const out = [];
+
+    cfg.fields.forEach(field => {
+      if (field.type === 'group') {
+        field.children.forEach(ch => {
+          out.push({
+            key: ch.key,
+            label: ch.label
+          });
+        });
+        return;
+      }
+
+      if (field.dependsOn) {
+        const v = (data[field.dependsOn.field] || '').toString();
+        if (v !== field.dependsOn.value) return;
+      }
+
+      out.push({
+        key: field.key,
+        label: field.label
+      });
+    });
+
+    return out;
+  }
+
+  function validateBeforeDownload() {
+    if (!currentType) {
+      alert('Primero selecciona el tipo de sensor.');
+      return false;
+    }
+    const data = answers[currentType] || {};
+    const visibleDefs = getVisibleFieldDefs();
+
+    const missing = visibleDefs.filter(def => {
+      const v = (data[def.key] || '').toString().trim();
+      return !v;
+    });
+
+    if (missing.length > 0) {
+      const lista = missing
+        .slice(0, 6)
+        .map(def => `• ${def.label}`)
+        .join('\n');
+      alert(
+        'Para descargar el PDF debes completar todos los campos visibles.\n\n' +
+        'Campos pendientes:\n' +
+        lista +
+        (missing.length > 6 ? '\n…' : '')
+      );
+      return false;
+    }
+    return true;
+  }
+
+  function splitText(doc, text, maxWidth) {
+    return doc.splitTextToSize(String(text), maxWidth);
+  }
+
+  async function downloadPdf() {
+    const cfg = QUIZ[currentType];
+    const data = answers[currentType] || {};
+    const { jsPDF } = window.jspdf;
+
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pad = 56;
+    let y = pad;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('Cuestionario para selección de instrumentación – INGETES', pad, y);
+    y += 20;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.text(`Tipo de sensor: ${cfg.title}`, pad, y);
+    y += 24;
+
+    const visibleDefs = getVisibleFieldDefs();
+
+    visibleDefs.forEach(def => {
+      const val = (data[def.key] || '').toString().trim() || '—';
+      const labelLine = `• ${def.label}:`;
+      const labelLines = splitText(doc, labelLine, 480);
+      labelLines.forEach(line => {
+        doc.setFont('helvetica', 'bold');
+        doc.text(line, pad, y);
+        y += 16;
+      });
+
+      const valueLines = splitText(doc, val, 464);
+      valueLines.forEach(line => {
+        doc.setFont('helvetica', 'normal');
+        doc.text(line, pad + 16, y);
+        y += 16;
+      });
+
+      y += 6;
+
+      if (y > 770) {
+        doc.addPage();
+        y = pad;
+      }
+    });
+
+    y += 8;
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(10);
+    const footerLines = splitText(
+      doc,
+      'Este documento se generó automáticamente desde el Cuestionario de instrumentación.',
+      480
+    );
+    footerLines.forEach(line => {
+      doc.text(line, pad, y);
+      y += 14;
+    });
+
+    const safeName = cfg.title.replace(/\s+/g, '_');
+    doc.save(`Brief_instrumentacion_${safeName}.pdf`);
+  }
+</script>
+</body>
+</html>
